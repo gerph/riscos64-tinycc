@@ -1,0 +1,78 @@
+#!/usr/bin/env riscos-amu -f
+# Makefile for TCC
+#
+
+#
+# Program specific options:
+#
+COMPONENT  = TCC
+
+# Specifies additional targets for startup
+#INITTARGET = inittarget
+
+# Specifies additional targets for clean
+#CLEANTARGET = cleantarget
+
+# aif, for linked objects
+# aof, for a partially linked AOF object
+# util, for utilities built with objasm
+# basic, for BASIC tools
+TYPE       = aif
+
+# The file to output (defaults ${COMPONENT})
+#TARGET = <filename>
+
+# Comma-separated list of paths to use for includes, such as:
+#	<Lib$Dir>.LibName.
+INCLUDES   =
+
+# Space separated list of defines to set, eg -DDEBUG
+CDEFINES   = -DTCC_TARGET_ARM64 -DONE_SOURCE=0 -DCONFIG_TCC_SEMLOCK=0
+
+# Space separated list of libraries to link against.
+LIBS       = ${CLIB}
+
+# Objects to build, using the format o.<name> (will be varied for build type)
+OBJS       = o.arm64-asm \
+             o.arm64-gen \
+             o.arm64-link \
+             o.tcc \
+             o.libtcc \
+             o.tccpp \
+             o.tccgen \
+             o.tccasm \
+			 o.tccelf \
+             o.tccdbg \
+             o.unix
+
+UNUSED = 	 o.arm-asm \
+         	 o.arm-gen \
+         	 o.arm-link \
+             o.c67-gen \
+             o.c67-link \
+             o.conftest \
+             o.i386-asm \
+             o.i386-gen \
+             o.i386-link \
+             o.x86_64-gen \
+             o.x86_64-link \
+             o.riscv64-asm \
+             o.riscv64-gen \
+             o.riscv64-link \
+             o.tccmacho \
+             o.tccpe \
+             o.tcccoff \
+             o.il-gen \
+             \
+             o.tcctools \
+             o.tccrun \
+
+# Space separated list of XML files for building documentation.
+#DOCSRC = <prm-in-xml-sources>
+
+
+include LibraryCommand
+
+
+#---------------------------------------------------------------------------
+# Dynamic dependencies:

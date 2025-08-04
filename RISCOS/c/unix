@@ -1,0 +1,156 @@
+/*******************************************************************
+ * File:        unix
+ * Purpose:     Simple implementation of the Unix functions for tcc
+ * Author:      Gerph
+ * Date:        30 Jul 2025
+ ******************************************************************/
+
+#include <stdlib.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "swis.h"
+
+// We're going to turn the 'open' calls into FILE * operations.
+#define NHANDLES 256
+static FILE *handles[NHANDLES];
+
+int open(const char *file, int flags, ...)
+{
+    int handle = 1;
+    char mode[8];
+    for (handle = 1; handle < NHANDLES; handle++)
+    {
+        if (handles[handle] == NULL)
+            break;
+    }
+    if (handle == NHANDLES)
+        return -1;
+    if ((flags & O_ACCMODE) == O_RDONLY)
+    {
+        strcpy(mode, "rb");
+    }
+    else if ((flags & O_ACCMODE) == O_WRONLY)
+    {
+        strcpy(mode, "wb");
+    }
+    else if ((flags & O_ACCMODE) == O_RDWR)
+    {
+        strcpy(mode, "w+b");
+    }
+    else
+    {
+        return -1; /* Unknown mode */
+    }
+
+    handles[handle] = fopen(file, mode);
+    if (handles[handle] == NULL)
+        return -1;
+    return handle;
+}
+
+int close(int handle)
+{
+    if (handle < 1 || handle >= NHANDLES)
+        return -1;
+    fclose(handles[handle]);
+    handles[handle] = NULL;
+    return 0;
+}
+
+FILE *fdopen(int handle, const char *mode)
+{
+    if (handle < 1 || handle >= NHANDLES)
+        return NULL;
+    return handles[handle];
+}
+
+long int lseek(int handle, off_t offset, int whence)
+{
+    if (handle < 1 || handle >= NHANDLES || handles[handle] == NULL)
+        return -1;
+    fseek(handles[handle], offset, whence);
+    return offset;
+}
+
+long int read(int handle, void *buf, size_t nbytes)
+{
+    if (handle < 1 || handle >= NHANDLES || handles[handle] == NULL)
+        return -1;
+    return fread(buf, 1, nbytes, handles[handle]);
+}
+
+
+int unlink(const char *file)
+{
+    return remove(file);
+}
+
+#define FSControl_CanonicalisePath (37)
+#define LONGEST_PATH (256)
+
+char *realpath(const char *from, char *to)
+{
+    size_t size = LONGEST_PATH;
+    _kernel_oserror *err;
+    bool allocated = false;
+    uint32_t unused;
+    if (to == NULL)
+    {
+        to = malloc(size);
+        allocated = true;
+        if (to == NULL)
+            return NULL;
+    }
+
+    err = _swix(OS_FSControl, _INR(0,5)|_OUT(5), FSControl_CanonicalisePath, from, to, NULL, NULL, size, &unused);
+    if (err || unused >= 1)
+    {
+        if (allocated)
+            free(to);
+        return NULL;
+    }
+    return to;
+}
+
+
+char *getcwd(char *dir, size_t size)
+{
+    return realpath("@", dir);
+}
+
+/* Constant: RISC OS epoch to Unix epoch offset in centiseconds */
+#define EPOCH_OFFSET_CS 220898880000ULL  // centiseconds
+
+int gettimeofday(struct timeval *tv, void *tz)
+{
+    uint64_t unix_time_cs;
+    _kernel_swi_regs regs;
+    uint64_t ro_time_cs;
+    if (!tv)
+        return -1;
+
+    memset(&regs, 0, sizeof(regs));
+
+    regs.r[0] = 14; // OS_Word reason code for reading time
+
+    _kernel_oserror *err = _kernel_swi(OS_Word, &regs, &regs);
+    if (err) return -1;
+
+    /* Combine r1 and r2 into 64-bit centiseconds value */
+    ro_time_cs  = ((uint64_t)regs.r[1] << 32) | (uint64_t)regs.r[2];
+
+    if (ro_time_cs < EPOCH_OFFSET_CS)
+        return -1;  // before the start of unix epoch
+
+    unix_time_cs = ro_time_cs - EPOCH_OFFSET_CS;
+
+    tv->tv_sec = unix_time_cs / 100;
+    tv->tv_usec = (unix_time_cs % 100) * 10000;
+
+    return 0;
+}

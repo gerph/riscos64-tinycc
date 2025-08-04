@@ -187,6 +187,7 @@ extern long double strtold (const char *__nptr, char **__endptr);
 #  define TCC_IS_NATIVE
 # endif
 #endif
+#undef TCC_IS_NATIVE    /* CJF: Disabled */
 
 #if defined CONFIG_TCC_BACKTRACE && CONFIG_TCC_BACKTRACE==0
 # undef CONFIG_TCC_BACKTRACE

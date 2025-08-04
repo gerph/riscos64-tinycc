@@ -245,7 +245,8 @@ static void *default_reallocator(void *ptr, unsigned long size)
     else {
         ptr1 = realloc(ptr, size);
         if (!ptr1) {
-            fprintf(stderr, "memory full\n");
+            fprintf(stderr, "memory full allocating (%i)\n", size);
+            abort();
             exit (1);
         }
     }
