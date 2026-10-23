@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 2
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - name: make & test tcc (x86_64-linux)
       run: ./configure && make && make test -k
 
@@ -17,7 +17,7 @@ jobs:
     runs-on: macos-15-intel
     timeout-minutes: 2
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - name: make & test tcc (x86_64-osx)
       run: ./configure && make && make test -k
 
@@ -25,7 +25,7 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 2
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - name: make & test tcc (aarch64-osx)
       run: ./configure && make && make test -k
 
@@ -33,7 +33,7 @@ jobs:
     runs-on: windows-2025
     timeout-minutes: 6
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - name: make & test tcc (x86_64-win32)
       shell: cmd
       run: |
@@ -61,7 +61,7 @@ jobs:
     runs-on: windows-2025
     timeout-minutes: 6
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - name: make & test tcc (i386-win32)
       shell: cmd
       run: |
@@ -89,7 +89,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 8
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - uses: uraimo/run-on-arch-action@v3
       name: make & test tcc (armv7-linux)
       with:
@@ -107,7 +107,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 8
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - uses: uraimo/run-on-arch-action@v3
       name: make & test tcc (aarch64-linux)
       with:
@@ -125,7 +125,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 8
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - uses: uraimo/run-on-arch-action@v3
       name: make & test tcc (riscv64-linux)
       with:
